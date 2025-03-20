@@ -5,8 +5,6 @@
 <div class="container">
 
 
-welcome to the index page.....
-
 @foreach ( $posts as $post )
 
 

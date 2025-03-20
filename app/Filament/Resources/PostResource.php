@@ -33,6 +33,7 @@ class PostResource extends Resource
             Section::make('Fill it correctly')
             ->schema([
 
+
                 //For id
                 TextInput::make('id')
                 ->label('ID')
@@ -75,31 +76,22 @@ class PostResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Post::query()->latest()) // Orders posts by created_at descending
             ->columns([
-
-
                 TextColumn::make('id')
-                    ->label('ID') 
-                    ->sortable(),   
-                
+                    ->label('ID')
+                    ->sortable(),
+    
                 TextColumn::make('title'),
-
+    
                 TextColumn::make('content')
-                ->limit(50),
-
-
+                    ->limit(50),
+    
                 TextColumn::make('summary')
-                ->limit(50)
-
-
-
-
-
-
-
+                    ->limit(50),
             ])
             ->filters([
-                //
+                // Add filters here
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
