@@ -64,6 +64,14 @@ class PostResource extends Resource
     }
     
 
+    // This is to redirect to another page
+
+
+
+
+
+
+
     public static function table(Table $table): Table
     {
         return $table

@@ -16,4 +16,13 @@ class EditPost extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index'); // Redirects to the posts list after editing
+    }
+    
+
+
+
 }
