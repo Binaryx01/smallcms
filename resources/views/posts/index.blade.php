@@ -20,4 +20,10 @@ welcome to the index page.....
 @endforeach
 
 </div>
+
+<div class="d-flex justify-content-center">
+    {{ $posts->links('pagination::bootstrap-5') }}
+</div>
+
+
 @endsection
