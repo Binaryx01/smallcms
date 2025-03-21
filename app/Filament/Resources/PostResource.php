@@ -3,22 +3,19 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
-use App\Filament\Resources\PostResource\RelationManagers;
 use App\Models\Post;
-use Doctrine\DBAL\Query\Limit;
+use App\Models\Category;
 use Filament\Forms;
+use Filament\Forms\Components\BelongsToManyCheckboxList;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select; // Correct import for Select
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class PostResource extends Resource
 {
@@ -29,49 +26,38 @@ class PostResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-
-            Section::make('Fill it correctly')
-            ->schema([
-
-
-                //For id
+            Section::make('Fill it correctly')->schema([
+                // For id
                 TextInput::make('id')
-                ->label('ID')
-                ->disabled()
-                ->default(fn ($record) => $record ? $record->id : null),
+                    ->label('ID')
+                    ->disabled()
+                    ->default(fn ($record) => $record ? $record->id : null),
 
+                // Title Field
+                TextInput::make('title')
+                    ->required()
+                    ->maxLength(500)
+                    ->columnSpanFull(),
 
+                // Content Field
+                RichEditor::make('content')
+                    ->required()
+                    ->dehydrateStateUsing(fn ($state) => strip_tags($state))
+                    ->columnSpanFull(),
 
+                // Summary Field
+                TextInput::make('summary')
+                    ->columnSpanFull(),
 
-            // Title Field
-            TextInput::make('title')
-                ->required()                     // Make the title field required
-                ->maxLength(500)        // Set a maximum length of 500 characters
-                ->columnSpanFull(),            // Make the field span the full width of the column
-    
-            // Content Field
-            RichEditor::make('content')
-                ->required()                          // Make the content field required
-                ->dehydrateStateUsing(fn ($state) => strip_tags($state))  // Strip HTML tags
-                ->columnSpanFull(),                   // Make the field span the full width of the column
-    
-            // Summary Field
-            TextInput::make('summary')
-                ->columnSpanFull(),                   // Make the field span the full width of the column
-       
-       
-                ])
-            ]);
+                // Categories Field (many-to-many relationship)
+                Select::make('categories') // Use the relationship name
+                    ->relationship('categories', 'name') // 'name' is the column to display
+                    ->multiple() // Allow multiple selections
+                    ->preload() // Preload options for better performance
+                    ->required(),
+            ]),
+        ]);
     }
-    
-
-    // This is to redirect to another page
-
-
-
-
-
-
 
     public static function table(Table $table): Table
     {
@@ -81,12 +67,21 @@ class PostResource extends Resource
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
-    
+
                 TextColumn::make('title'),
-    
+
                 TextColumn::make('content')
                     ->limit(50),
-    
+
+                // Display categories as a comma-separated list
+                TextColumn::make('categories.name')
+                    ->label('Categories')
+                    ->formatStateUsing(function ($state, Post $post) {
+                        return $post->categories->pluck('name')->implode(', ');
+                    })
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('summary')
                     ->limit(50),
             ])
@@ -106,7 +101,7 @@ class PostResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // Add relation managers here if needed
         ];
     }
 
